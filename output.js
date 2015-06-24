@@ -1,7 +1,8 @@
+
 // include /static/js/base.js
 cmsjs.WithApp(function(app) {
-
-    app.service('WidgetApiController', ['$http', function($http) {
+    
+    app.service('WidgetApi', ['$http', function($http) {
         var apiPost = function(url, data, context, successCallback) {
             $http.post(url, data, context)
                 .success(function(resp, status, headers, ctx) {
@@ -18,15 +19,14 @@ cmsjs.WithApp(function(app) {
                 });
         };
         return {
+            
+            SendMessageToAllUsers: function(content, context, successCallback) {
+                apiPost(ApiUrl('/WidgetApi/SendMessageToAllUsers'+'?'+content), null, context, successCallback);
+            },
+            
             Post: function(endpoint, data, context, successCallback) {
                 apiPost(ApiUrl('/WidgetApi/' + endpoint), data, context, successCallback);
-            },
-            
-            SendMessageToAllUsers: function(<[]*ast.Ident Value>, context, successCallback) {
-                apiPost(ApiUrl('/SendMessageToAllUsers/' + endpoint), data, context, successCallback);
-            },
-            
+            }
         };
     }]);
-
 });
