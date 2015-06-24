@@ -1,0 +1,32 @@
+// include /static/js/base.js
+cmsjs.WithApp(function(app) {
+
+    app.service('{{ ast.TypeName }}', ['$http', function($http) {
+        var apiPost = function(url, data, context, successCallback) {
+            $http.post(url, data, context)
+                .success(function(resp, status, headers, ctx) {
+                    if (resp.Success) {
+                        if (successCallback) {
+                            successCallback(resp, ctx);
+                        }
+                    } else {
+                        alert(resp.Error);
+                    }
+                })
+                .error(function(resp) {
+                    alert(resp);
+                });
+        };
+        return {
+            Post: function(endpoint, data, context, successCallback) {
+                apiPost(ApiUrl('/WidgetApi/' + endpoint), data, context, successCallback);
+            },
+            {% for fd in ast.Funcs %}
+            {{fd.Name.Name}}: function({% for p in fd.Type.Params.List %}{{p.Names}}, {% endfor %}context, successCallback) {
+                apiPost(ApiUrl('/{{fd.Name.Name}}/' + endpoint), data, context, successCallback);
+            },
+            {% endfor %}
+        };
+    }]);
+
+});
