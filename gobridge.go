@@ -108,7 +108,7 @@ func (v *GoAstVisitor) RenderFile(outFilePath string) {
 
 func main() {
 	pkgPath := "github.com/xinhuang327/web/cms/ctrls"
-	srcFileName := "widget_api.go"
+	srcFileName := "WidgetApi.go"
 
 	pkg, err := findSourcePackage(pkgPath)
 	if err != nil {
