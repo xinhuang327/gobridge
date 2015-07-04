@@ -119,7 +119,7 @@ func main() {
 
 	node, err := parser.ParseFile(fset, srcFilePath, nil, parser.DeclarationErrors)
 	if err != nil {
-		fmt.Println("parser.ParseFile error:", err)
+		fmt.Println("parser.ParseFile error:", err, srcFilePath)
 	}
 	// ast.Print(fset, node)
 
