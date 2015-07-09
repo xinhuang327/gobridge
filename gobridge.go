@@ -8,6 +8,7 @@ import (
 	"go/token"
 	"os"
 	"path"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"unicode"
@@ -16,6 +17,48 @@ import (
 )
 
 var fset = token.NewFileSet()
+
+func main() {
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err != nil {
+		fmt.Println("filepath.Abs error", err)
+	}
+	err = os.Chdir(dir)
+	if err != nil {
+		fmt.Println("os.Chdir error", err)
+	}
+
+	pkgPath := "github.com/xinhuang327/web/cms/ctrls"
+	srcFileName := "WidgetApi.go"
+
+	pkg, err := findSourcePackage(pkgPath)
+	if err != nil {
+		fmt.Println("findSourcePackage error:", err)
+	}
+	srcFilePath := getGoFilePath(pkg, srcFileName)
+	fmt.Println(srcFilePath)
+
+	node, err := parser.ParseFile(fset, srcFilePath, nil, parser.DeclarationErrors)
+	if err != nil {
+		fmt.Println("parser.ParseFile error:", err)
+	}
+	// ast.Print(fset, node)
+
+	visitor := &GoAstVisitor{}
+	ast.Walk(visitor, node)
+
+	fmt.Printf("%#v\n", visitor)
+
+	outPath := "github.com/xinhuang327/web/cms/web/public/static/js/svc"
+	outPathPkg, err := findSourcePackage(outPath)
+	if err != nil {
+		fmt.Println("findSourcePackage error:", err)
+	}
+	outFilePath := path.Join(outPathPkg.Dir, visitor.GetSimpleTypeName()+".js")
+	fmt.Println("outFilePath", outFilePath)
+	visitor.RenderFile(outFilePath)
+	visitor.RenderFile("output.js")
+}
 
 type GoAstVisitor struct {
 	TypeName string
@@ -40,7 +83,7 @@ func (v *GoAstVisitor) GetPrimitiveParams(funcD *ast.FuncDecl) string {
 	for _, para := range funcD.Type.Params.List {
 		if !v.IsStructParam(para) {
 			query := para.Names[0].Name
-			primitiveParamNames = append(primitiveParamNames, query)
+			primitiveParamNames = append(primitiveParamNames, "_p("+query+")")
 		}
 	}
 	if len(primitiveParamNames) > 0 {
@@ -104,38 +147,6 @@ func (v *GoAstVisitor) RenderFile(outFilePath string) {
 	if err != nil {
 		fmt.Println("outFile.Close() error:", err)
 	}
-}
-
-func main() {
-	pkgPath := "github.com/xinhuang327/web/cms/ctrls"
-	srcFileName := "widget_api.go"
-
-	pkg, err := findSourcePackage(pkgPath)
-	if err != nil {
-		fmt.Println("findSourcePackage error:", err)
-	}
-	srcFilePath := getGoFilePath(pkg, srcFileName)
-	fmt.Println(srcFilePath)
-
-	node, err := parser.ParseFile(fset, srcFilePath, nil, parser.DeclarationErrors)
-	if err != nil {
-		fmt.Println("parser.ParseFile error:", err)
-	}
-	// ast.Print(fset, node)
-
-	visitor := &GoAstVisitor{}
-	ast.Walk(visitor, node)
-
-	fmt.Printf("%#v\n", visitor)
-
-	outPath := "github.com/xinhuang327/web/cms/web/public/static/js/svc"
-	outPathPkg, err := findSourcePackage(outPath)
-	if err != nil {
-		fmt.Println("findSourcePackage error:", err)
-	}
-	outFilePath := path.Join(outPathPkg.Dir, visitor.GetSimpleTypeName()+".js")
-	visitor.RenderFile(outFilePath)
-	visitor.RenderFile("output.js")
 }
 
 func findSourcePackage(pkgPath string) (*build.Package, error) {

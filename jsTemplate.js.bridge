@@ -18,6 +18,13 @@ cmsjs.WithApp(function(app) {
                     alert(resp);
                 });
         };
+        var _p = function(queryParam) {
+            if (!queryParam) {
+                return "";
+            } else {
+                return queryParam;
+            }
+        };
         return {
             {% for fd in visitor.Funcs %}
             {{fd.Name.Name}}: function({% for p in fd.Type.Params.List %}{{p.Names.0.Name}}, {% endfor %}context, successCallback) {
