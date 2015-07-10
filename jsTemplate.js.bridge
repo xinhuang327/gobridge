@@ -3,8 +3,8 @@
 cmsjs.WithApp(function(app) {
     {% set TypeName = visitor.GetSimpleTypeName() %}
     app.service('{{ TypeName }}', ['$http', function($http) {
-        var apiPost = function(url, data, context, successCallback) {
-            $http.post(url, data, context)
+        var apiPost = function(url, data, config, successCallback) {
+            $http.post(url, data, config)
                 .success(function(resp, status, headers, ctx) {
                     if (resp.Success) {
                         if (successCallback) {
@@ -27,12 +27,12 @@ cmsjs.WithApp(function(app) {
         };
         return {
             {% for fd in visitor.Funcs %}
-            {{fd.Name.Name}}: function({% for p in fd.Type.Params.List %}{{p.Names.0.Name}}, {% endfor %}context, successCallback) {
-                apiPost(ApiUrl('/{{ TypeName }}/{{fd.Name.Name}}'+{{visitor.GetPrimitiveParams(fd)}}), {{visitor.GetStructParamName(fd)}}, context, successCallback);
+            {{fd.Name.Name}}: function({% for p in fd.Type.Params.List %}{{p.Names.0.Name}}, {% endfor %}config, successCallback) {
+                apiPost(ApiUrl('/{{ TypeName }}/{{fd.Name.Name}}'+{{visitor.GetPrimitiveParams(fd)}}), {{visitor.GetStructParamName(fd)}}, config, successCallback);
             },
             {% endfor %}
-            Post: function(endpoint, data, context, successCallback) {
-                apiPost(ApiUrl('/WidgetApi/' + endpoint), data, context, successCallback);
+            Post: function(endpoint, data, config, successCallback) {
+                apiPost(ApiUrl('/WidgetApi/' + endpoint), data, config, successCallback);
             }
         };
     }]);
